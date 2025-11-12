@@ -57,6 +57,7 @@ We can imagine for example other classes like Trolls or Goblins (which are obvio
 This mini-game simulator should be designed as an API.
 
 Endpoints needed are:
+ 
  - POST `/knight` Create a knight
  - GET `/knight` Get the list of knights
  - GET `/knight/{id}` Get one knight
@@ -108,5 +109,7 @@ By default, tests will be executed like:
     ./bin/phpunit
 
 If your solution needs any database instance, you can (of your choice):
+ 
  - Add a docker compose file
  - In other case, please mention instructions in [NOTES.md](./NOTES.md) how to set up the database for testing.
+

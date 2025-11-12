@@ -1,0 +1,102 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Liste les tâches disponibles
+    cmds:
+      - task --list
+
+  build:
+    desc: Build Docker image php-assignment
+    cmds:
+      - docker build . -t php-assignment
+
+  up:
+    desc: Start docker compose services
+    cmds:
+      - docker compose up -d
+
+  down:
+    desc: Stop docker compose services
+    cmds:
+      - docker compose down
+
+  db:create:
+    desc: Create database for current env if not exists
+    cmds:
+      - php bin/console doctrine:database:create --if-not-exists
+
+  migrate:
+    desc: Run doctrine migrations
+    cmds:
+      - php bin/console doctrine:migrations:migrate -n
+
+  cache:clear:
+    desc: Clear Symfony cache and logs
+    cmds:
+      - rm -rf var/cache/* var/log/*
+      - php bin/console cache:clear --no-warmup || true
+
+  test:
+    desc: Run PHPUnit tests
+    cmds:
+      - ./bin/phpunit
+
+  cs:check:
+    desc: Run PHP-CS-Fixer in dry-run (coding standards)
+    cmds:
+      - vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff
+
+  cs:fix:
+    desc: Fix coding standards with PHP-CS-Fixer
+    cmds:
+      - vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php
+
+  stan:
+    desc: Run PHPStan static analysis
+    cmds:
+      - vendor/bin/phpstan analyse -c phpstan.neon.dist
+
+  deptrac:
+    desc: Run deptrac hexagonal architecture checks
+    cmds:
+      - vendor/bin/deptrac --config-file=deptrac.yaml
+
+  ci:
+    desc: Run linters, static analysis, tests
+    cmds:
+      - composer validate --no-check-publish
+      - task cs:check
+      - task stan
+      - task deptrac
+      - task test
+
+  db:wait:
+    desc: Wait until Postgres is healthy
+    cmds:
+      - |
+        set -e
+        echo "Waiting for postgres (docker healthcheck)..."
+        for i in {1..30}; do
+          if docker inspect php_assignment_postgres | grep -q '"Status": "healthy"'; then
+            echo "Postgres is healthy."
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "Postgres not healthy in time." && exit 1
+
+  composer:install:
+    desc: Composer install (prod + dev)
+    cmds:
+      - composer install --no-interaction --prefer-dist
+
+  composer:update:
+    desc: Composer update (prod + dev)
+    cmds:
+      - composer update --no-interaction --prefer-dist
+
+  serve:
+    desc: Start PHP built-in server on 127.0.0.1:8000
+    cmds:
+      - php -S 127.0.0.1:8000 -t public

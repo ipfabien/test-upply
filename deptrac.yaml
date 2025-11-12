@@ -1,0 +1,56 @@
+deptrac:
+  paths:
+    - src
+  layers:
+    - name: Shared
+      collectors:
+        - type: directory
+          value: src/Shared
+    - name: Domain
+      collectors:
+        - type: directory
+          value: src/Domain
+    - name: Application
+      collectors:
+        - type: directory
+          value: src/Handler
+    - name: UserInterface
+      collectors:
+        - type: directory
+          value: src/Controller
+    - name: Infrastructure
+      collectors:
+        - type: directory
+          value: src/Infrastructure
+    - name: WebmozartAssert
+      collectors:
+        - type: classNameRegex
+          value: '#^Webmozart\\\\Assert\\\\Assert$#'
+    - name: SymfonyUid
+      collectors:
+        - type: classNameRegex
+          value: '#^Symfony\\\\Component\\\\Uid\\\\Uuid$#'
+    - name: Vendor
+      collectors:
+        - type: classNameRegex
+          value: '#^(Symfony|Doctrine|Psr|Monolog|PhpCsFixer|PhpParser|PHPUnit|Sebastian|Composer|React|Fidry|Masterminds)\\\\#'
+  ruleset:
+    Shared: []
+    Domain:
+      - Shared
+      - WebmozartAssert
+      - SymfonyUid
+    Application:
+      - Domain
+      - Shared
+      - Vendor
+    UserInterface:
+      - Application
+      - Domain
+      - Shared
+      - Vendor
+    Infrastructure:
+      - Domain
+      - Shared
+      - SymfonyUid
+      - Vendor
