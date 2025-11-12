@@ -1,0 +1,74 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: upply_test
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U app -d upply_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo_pgsql, json, mbstring
+          coverage: none
+
+      - name: Create .env for CI
+        run: |
+          cat > .env <<'EOF'
+          APP_ENV=dev
+          APP_DEBUG=1
+          DEFAULT_URI="http://localhost"
+          DATABASE_URL="pgsql://app:app@127.0.0.1:5432/upply"
+          EOF
+
+      - name: Validate composer.json
+        run: composer validate --no-check-publish
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: CS Fixer (dry-run)
+        run: vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff
+
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse -c phpstan.neon.dist
+
+      - name: Deptrac
+        run: vendor/bin/deptrac --config-file=deptrac.yaml
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            nc -z 127.0.0.1 5432 && echo "Postgres is up" && exit 0
+            sleep 2
+          done
+          echo "Postgres not ready" && exit 1
+
+      - name: Run PHPUnit (task test)
+        env:
+          APP_ENV: test
+          APP_DEBUG: 1
+          DATABASE_URL: pgsql://app:app@127.0.0.1:5432/upply_test
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+        run: ./bin/phpunit
