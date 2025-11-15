@@ -5,34 +5,52 @@ declare(strict_types=1);
 namespace App\Tests\Controller;
 
 use App\Controller\KnightRequest;
+use Faker\Factory;
+use Faker\Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class KnightRequestTest extends TestCase
 {
+    private Generator $faker;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->faker = Factory::create();
+    }
+
     public function testDenormalizeValidData(): void
     {
+        $name = $this->faker->firstName();
+        $strength = $this->faker->numberBetween(0, 100);
+        $weaponPower = $this->faker->numberBetween(0, 100);
+
         $dto = KnightRequest::denormalize([
-            'name' => 'Arthur',
-            'strength' => 10,
-            'weapon_power' => 20,
+            'name' => $name,
+            'strength' => $strength,
+            'weapon_power' => $weaponPower,
         ]);
 
-        $this->assertSame('Arthur', $dto->name);
-        $this->assertSame(10, $dto->strength);
-        $this->assertSame(20, $dto->weaponPower);
+        $this->assertSame($name, $dto->name);
+        $this->assertSame($strength, $dto->strength);
+        $this->assertSame($weaponPower, $dto->weaponPower);
     }
 
     public function testDenormalizeAcceptsIntegerish(): void
     {
+        $name = $this->faker->firstName();
+        $strength = $this->faker->numberBetween(0, 100);
+        $weaponPower = $this->faker->numberBetween(0, 100);
+
         $dto = KnightRequest::denormalize([
-            'name' => 'Bors',
-            'strength' => '11',
-            'weapon_power' => '22',
+            'name' => $name,
+            'strength' => (string) $strength,
+            'weapon_power' => (string) $weaponPower,
         ]);
 
-        $this->assertSame(11, $dto->strength);
-        $this->assertSame(22, $dto->weaponPower);
+        $this->assertSame($strength, $dto->strength);
+        $this->assertSame($weaponPower, $dto->weaponPower);
     }
 
     public function testDenormalizeMissingName(): void
@@ -58,7 +76,7 @@ final class KnightRequestTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         KnightRequest::denormalize([
-            'name' => 'Guenièvre',
+            'name' => $this->faker->firstName(),
             'weapon_power' => 20,
         ]);
     }
@@ -67,7 +85,7 @@ final class KnightRequestTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         KnightRequest::denormalize([
-            'name' => 'Perceval',
+            'name' => $this->faker->firstName(),
             'strength' => 'ten',
             'weapon_power' => 20,
         ]);
@@ -77,7 +95,7 @@ final class KnightRequestTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         KnightRequest::denormalize([
-            'name' => 'Lancelot',
+            'name' => $this->faker->firstName(),
             'strength' => 10,
         ]);
     }
@@ -86,7 +104,7 @@ final class KnightRequestTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         KnightRequest::denormalize([
-            'name' => 'Gauvain',
+            'name' => $this->faker->firstName(),
             'strength' => 10,
             'weapon_power' => 'twenty',
         ]);
@@ -94,17 +112,21 @@ final class KnightRequestTest extends TestCase
 
     public function testNormalize(): void
     {
+        $name = $this->faker->firstName();
+        $strength = $this->faker->numberBetween(0, 100);
+        $weaponPower = $this->faker->numberBetween(0, 100);
+
         $dto = KnightRequest::denormalize([
-            'name' => 'Arthur',
-            'strength' => 10,
-            'weapon_power' => 20,
+            'name' => $name,
+            'strength' => $strength,
+            'weapon_power' => $weaponPower,
         ]);
 
         $data = $dto->normalize();
         $this->assertSame([
-            'name' => 'Arthur',
-            'strength' => 10,
-            'weapon_power' => 20,
+            'name' => $name,
+            'strength' => $strength,
+            'weapon_power' => $weaponPower,
         ], $data);
     }
 }

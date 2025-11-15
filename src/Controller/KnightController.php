@@ -55,16 +55,8 @@ class KnightController extends AbstractController
     public function list(): JsonResponse
     {
         $set = $this->listKnightsHandler->ask(new ListKnightsQuery());
-        $items = [];
-        foreach ($set as $externalId => $knight) {
-            $items[] = [
-                'id' => $externalId,
-                'name' => $knight->name,
-                'strength' => $knight->strength,
-                'weapon_power' => $knight->weaponPower,
-            ];
-        }
-        return new JsonResponse($items, Response::HTTP_OK);
+
+        return new JsonResponse($set->normalize(), Response::HTTP_OK);
     }
 
     #[Route('/knight/{id}', name: 'knight_get', methods: ['GET'])]
@@ -72,11 +64,6 @@ class KnightController extends AbstractController
     {
         $knight = $this->getKnightHandler->ask(new GetKnightQuery($id));
 
-        return new JsonResponse([
-            'id' => $knight->getId(),
-            'name' => $knight->name,
-            'strength' => $knight->strength,
-            'weapon_power' => $knight->weaponPower,
-        ], Response::HTTP_OK);
+        return new JsonResponse($knight->normalize(), Response::HTTP_OK);
     }
 }

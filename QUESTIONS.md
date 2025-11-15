@@ -37,6 +37,8 @@ There is no correct answer and none is mandatory, if you don't know just skip it
 
 The initial structure is already interesting and supports DDD, CQRS, and hexagonal architecture.
 
+Use of the port/adapter concept thanks to the interface contracts already in place.
+
 It would be good to rename Controller to UserInterface, e.g., UserInterface/Http/Controller/Api, and Handler to Application, separate read/write repositories more explicitly if features expand.
 
 ## For you, what are the boundaries of a service inside a microservice architecture?
